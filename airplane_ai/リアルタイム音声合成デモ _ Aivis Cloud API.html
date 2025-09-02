@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<!--
+    Copyright (c) 2025 Aivis Project
+    SPDX-License-Identifier: CC0-1.0
+-->
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>リアルタイム音声合成デモ | Aivis Cloud API</title>
+    <meta name="description" content="Aivis Cloud API のストリーミング音声合成をリアルタイムで体験できるデモページです。高品質な音声生成と応答速度をぜひお試しください。">
+    <link rel="icon" href="https://hub.aivis-project.com/favicon.ico" sizes="48x48">
+    <link rel="icon" href="https://hub.aivis-project.com/favicon.svg" sizes="any" type="image/svg+xml">
+
+    <!-- OGP -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="リアルタイム音声合成デモ | Aivis Cloud API">
+    <meta property="og:description" content="Aivis Cloud API のストリーミング音声合成をリアルタイムで体験できるデモページです。高品質な音声生成と応答速度をぜひお試しください。">
+    <meta property="og:locale" content="ja">
+    <meta property="og:image" content="https://hub.aivis-project.com/assets/images/aivis-cloud-api-ogp.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="リアルタイム音声合成デモ | Aivis Cloud API">
+    <meta name="twitter:description" content="Aivis Cloud API のストリーミング音声合成をリアルタイムで体験できるデモページです。高品質な音声生成と応答速度をぜひお試しください。">
+    <meta name="twitter:image" content="https://hub.aivis-project.com/assets/images/aivis-cloud-api-ogp.png">
+    <meta name="twitter:site" content="@aivis_project">
+
+    <!-- Disable Dark Reader on this LP -->
+    <!-- ref: https://github.com/darkreader/darkreader/blob/main/CONTRIBUTING.md#disabling-dark-reader-on-your-site -->
+    <meta name="darkreader-lock">
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TEMWCS6D7B"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-TEMWCS6D7B');
+    </script>
+
+    <!-- Web Fonts -->
+    <style>
+        @font-face {
+            font-family: 'LINE Seed JP';
+            font-weight: 400;
+            font-display: swap;
+            src: url('https://aivis-project.com/assets/fonts/LINESeedJP-Regular.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: 'LINE Seed JP';
+            font-weight: 700;
+            font-display: swap;
+            src: url('https://aivis-project.com/assets/fonts/LINESeedJP-Bold.woff2') format('woff2');
+        }
+    </style>
+
+    <!-- Styles -->
+    <style>
+        /* Reset CSS */
+        *,*::before,*::after{box-sizing:border-box}html{-moz-text-size-adjust:none;-webkit-text-size-adjust:none;text-size-adjust:none}body,h1,h2,h3,h4,p,figure,blockquote,dl,dd{margin:0}ul[role='list'],ol[role='list']{list-style:none}body{min-height:100vh;line-height:1.65}h1,h2,h3,h4,button,input,label{line-height:1.65}h1,h2,h3,h4{text-wrap:balance}a:not([class]){text-decoration-skip-ink:auto;color:currentColor}img,picture{max-width:100%;display:block}input,button,textarea,select{font:inherit}textarea:not([rows]){min-height:10em}:target{scroll-margin-block:5ex}
+
+        /* 配色定義 */
+        :root {
+            color-scheme: dark;
+            --color-primary-dark: 23, 142, 232;
+            --color-primary: 65, 162, 236;
+            --color-primary-light: 130, 201, 255;
+            --color-border: 59, 62, 67;
+            --color-border-light: 96, 100, 108;
+            --color-highlight: 250, 239, 141;
+            --background-dark: 32, 35, 39;
+            --background-normal: 42, 46, 51;
+            --background-light: 54, 58, 63;
+            --background-light-hover: 66, 71, 77;
+            --background-white: 255, 255, 255;
+            --background-white-blue: 242, 251, 255;
+            --text-normal: 251, 238, 234;
+            --text-light: 210, 211, 212;
+            --text-placeholder: 151, 153, 155;
+        }
+
+        /* Android でタップしたときのハイライトが出ないようにする */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 選択時の色 */
+        *::selection {
+            background-color: #41a2ec80;
+        }
+
+        body {
+            color: rgb(var(--text-normal));
+            background-color: rgb(var(--background-normal));
+            font-family: 'LINE Seed JP', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+        }
+
+        .container {
+            background: rgb(var(--background-light));
+            padding: 24px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            border: 1px solid rgb(var(--color-border));
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 16px;
+            }
+        }
+
+        h1 {
+            color: rgb(var(--text-normal));
+            text-align: center;
+            font-size: 24px;
+            margin-top: 0px;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 22px;
+            }
+        }
+        h1 > span {
+            white-space: nowrap;
+        }
+
+        a[href]:not([class]) {
+            color: rgb(var(--color-primary));
+        }
+        a[href]:not([class]):hover {
+            color: rgb(var(--color-primary-dark));
+        }
+
+        .form-group {
+            margin-top: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: rgb(var(--text-normal));
+        }
+
+        input[type="text"], input[type="password"], input[type="url"], textarea {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgb(var(--color-border));
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+            background-color: rgb(var(--background-dark));
+            color: rgb(var(--text-normal));
+            transition: border-color 0.2s;
+        }
+
+        /* 入力欄にアイコンボタンを重ねるためのコンテナ */
+        .input-with-icon {
+            display: block;
+            position: relative;
+            width: 100%;
+        }
+        .input-with-icon > input {
+            padding-right: 44px; /* 右側のアイコン分の余白を確保 */
+        }
+        .input-icon-button {
+            display: flex;
+            position: absolute;
+            top: 50%;
+            right: 8px;
+            transform: translateY(-50%);
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: transparent;
+            border: none;
+            color: rgb(var(--text-light));
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .input-icon-button:hover {
+            background-color: rgba(var(--color-primary), 0.08);
+            color: rgb(var(--color-primary-light));
+        }
+        .input-icon-button svg {
+            display: block;
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+        }
+
+        /* API キーのマスク表示用 */
+        .input-with-icon > input.masked {
+            -webkit-text-security: disc;
+        }
+
+        /* サジェスト UI */
+        .input-with-suggest {
+            position: relative;
+            width: 100%;
+        }
+        .suggestion-panel {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: calc(100% + 6px);
+            background-color: rgb(var(--background-dark));
+            border: 1px solid rgb(var(--color-border));
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            max-height: 240px;
+            overflow: auto;
+            z-index: 30;
+        }
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+        .suggestion-item:hover,
+        .suggestion-item--active {
+            background-color: rgba(var(--color-primary), 0.08);
+        }
+        .suggestion-item__text {
+            flex: 1;
+            color: rgb(var(--text-normal));
+            font-size: 13px;
+            white-space: pre-line;
+            word-break: break-word;
+        }
+        .suggestion-item__delete {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: none;
+            color: rgb(var(--text-light));
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .suggestion-item__delete:hover {
+            background-color: rgba(var(--color-primary), 0.08);
+            color: rgb(var(--color-primary-light));
+        }
+        .suggestion-item__delete svg { width: 16px; height: 16px; stroke: currentColor; }
+
+        input[type="text"]:focus, input[type="password"]:focus, input[type="url"]:focus, textarea:focus {
+            outline: none;
+            border-color: rgb(var(--color-primary));
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: rgb(var(--text-placeholder));
+        }
+
+        .note {
+            background-color: rgba(var(--color-highlight), 0.1);
+            border: 1px solid rgba(var(--color-highlight), 0.3);
+            color: rgb(var(--color-highlight));
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .required {
+            color: rgb(239, 154, 154);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        @media (max-width: 600px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+
+        .label-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px; /* label の margin-bottom と合わせる */
+        }
+
+        textarea {
+            font-family: inherit;
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        /* 文字数カウンターのスタイル */
+        .char-counter {
+            text-align: right;
+            margin-top: 8px;
+            font-size: 13px;
+            color: rgb(var(--text-light));
+        }
+
+        .char-counter #charCount {
+            font-weight: 700;
+            color: rgb(var(--color-primary));
+        }
+
+        .status {
+            padding: 12px;
+            margin: 16px 0;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+        .status.info {
+            background-color: rgba(var(--color-primary), 0.2);
+            color: rgb(var(--color-primary-light));
+            border: 1px solid rgba(var(--color-primary), 0.3);
+        }
+        .status.success {
+            background-color: rgba(56, 142, 60, 0.2);
+            color: rgb(129, 199, 132);
+            border: 1px solid rgba(56, 142, 60, 0.3);
+        }
+        .status.error {
+            background-color: rgba(211, 47, 47, 0.2);
+            color: rgb(239, 154, 154);
+            border: 1px solid rgba(211, 47, 47, 0.3);
+        }
+
+        /* リセットボタンのスタイル */
+        .reset-button {
+            background-color: rgb(var(--background-light-hover));
+            color: rgb(var(--text-light));
+            border: 1px solid rgb(var(--color-border-light));
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            white-space: nowrap; /* ボタン内のテキストが改行されないように */
+        }
+        .reset-button:hover {
+            background-color: rgba(var(--color-primary), 0.1);
+            border-color: rgb(var(--color-primary));
+        }
+        .reset-button:active {
+            background-color: rgba(var(--color-primary), 0.02);
+            border-color: rgb(var(--color-primary));
+        }
+
+        .demo-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: inherit;
+            background-color: rgb(var(--color-primary));
+            color: rgb(var(--text-normal));
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .demo-button:hover {
+            background-color: rgb(var(--color-primary-dark));
+        }
+        .demo-button:disabled {
+            background-color: rgb(var(--color-border-light));
+            cursor: not-allowed;
+        }
+
+        .download-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: inherit;
+            background-color: rgb(var(--background-light-hover));
+            color: rgb(var(--text-light));
+            border: 1px solid rgb(var(--color-border-light));
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+        .download-button:hover:not(:disabled) {
+            background-color: rgba(var(--color-primary), 0.1);
+            border-color: rgb(var(--color-primary));
+        }
+        .download-button:active:not(:disabled) {
+            background-color: rgba(var(--color-primary), 0.02);
+            border-color: rgb(var(--color-primary));
+        }
+        .download-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span>リアルタイム音声合成デモ |</span><wbr> <span>Aivis Cloud API</span></h1>
+
+        <div style="font-size: 14.5px;">
+            Aivis Cloud API のストリーミング音声合成をリアルタイムで体験できるデモページです。<br>
+            音声の生成と再生を同時並行で行い、生成された部分から順次再生を開始します。高品質な音声生成と応答速度をぜひお試しください。
+        </div>
+
+        <div class="note">
+            PC Chrome・Android Chrome・Mac Safari・iOS Safari で動作します（Firefox では動作しません）。<br>
+            ソースコードはこのページの HTML にすべて含まれていますので、ぜひ実装の参考としてご活用ください。<br>
+            （ライセンスはパブリックドメインとします。）
+        </div>
+
+        <form id="ttsForm" autocomplete="off">
+            <div class="form-group">
+                <label for="modelUUID">モデル UUID (<a href="https://hub.aivis-project.com/search" target="_blank">検索はこちら</a>) <span class="required">*</span></label>
+                <div class="input-with-suggest">
+                    <input type="text" id="modelUUID" name="modelUUID" placeholder="モデル UUID を入力してください" required>
+                    <div id="modelUUIDSuggestions" class="suggestion-panel" hidden></div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="apiKey">API キー (<a href="https://hub.aivis-project.com/cloud-api/api-keys" target="_blank">取得はこちら</a>) <span class="required">*</span></label>
+                    <div class="input-with-icon">
+                        <input type="text" id="apiKey" name="apiKey" class="api-key-input masked" placeholder="API キーを入力してください" required autocomplete="off" autocapitalize="none" spellcheck="false" inputmode="text" data-lpignore="true" data-1p-ignore="true" data-bwignore="true">
+                        <button type="button" id="toggleAPIKeyVisibility" class="input-icon-button" aria-label="API キーを表示" title="API キーを表示">
+                            <!-- eye (show) icon -->
+                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M1.5 12S6 4.5 12 4.5 22.5 12 22.5 12 18 19.5 12 19.5 1.5 12 1.5 12z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="BaseURL">API ベース URL <span class="required">*</span></label>
+                    <input type="url" id="BaseURL" name="BaseURL" placeholder="例: https://api.aivis-project.com" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="label-group">
+                    <label for="text" style="margin-bottom: 0px;">生成するテキスト (<a href="https://api.aivis-project.com/v1/docs#tag/Text-to-Speech/operation/TextToSpeechAPI" target="_blank">SSML に対応</a> /  改行ごとに分割して生成されます) <span class="required">*</span></label>
+                    <button type="button" id="resetTextButton" class="reset-button">テキストを<wbr>デフォルトに戻す</button>
+                </div>
+                <div class="input-with-suggest">
+                    <textarea id="text" name="text" placeholder="音声合成したいテキストを入力してください。改行ごとに分割して生成されます。" required>エンコードが完了した音声データは順番に、API レスポンスとしてリアルタイムにストリーミング配信します。
+このリアルタイム配信を活用すれば、すべての音声合成が完了するのを待たずに、クライアント側で再生を開始できます。
+届いた音声データのチャンクを順次デコーダーに送信するよう実装することで、音声の生成と再生を同時並行で行えます。
+クライアント側の実装次第となりますが、長いテキストを読み上げる際も最初から最後まで待たずにすぐに再生を開始でき、生成から再生までの待機時間を大幅に短縮できます。
+<sub alias="いちぎょう">一行</sub>に長いテキストをすべて書くと、その行全体が一度に音声合成されるため、ストリーミング配信の効果が得られません。
+この文章のように、適切にテキストを分割することで、生成と配信の並行処理が可能になります。</textarea>
+                    <div id="textSuggestions" class="suggestion-panel" hidden></div>
+                </div>
+                <div id="charCounter" class="char-counter">文字数: <span id="charCount">0</span> 文字</div>
+            </div>
+            <div id="status"></div>
+            <button type="submit" id="demoButton" class="demo-button">音声合成＆ストリーミング再生を開始</button>
+            <button type="button" id="downloadButton" class="download-button" disabled>音声をダウンロード</button>
+        </form>
+    </div>
+
+    <script>
+        const modelUUIDInput = document.getElementById('modelUUID');
+        const modelUUIDSuggestions = document.getElementById('modelUUIDSuggestions');
+        const apiKeyInput = document.getElementById('apiKey');
+        const toggleAPIKeyButton = document.getElementById('toggleAPIKeyVisibility');
+        const textInput = document.getElementById('text');
+        const textSuggestions = document.getElementById('textSuggestions');
+        const charCountSpan = document.getElementById('charCount');
+        const statusDiv = document.getElementById('status');
+        const ttsForm = document.getElementById('ttsForm');
+        const resetTextButton = document.getElementById('resetTextButton');
+        const demoButton = document.getElementById('demoButton');
+        const downloadButton = document.getElementById('downloadButton');
+
+        // SSML タグ除去用の事前コンパイル正規表現（バックエンドと整合する簡易版）
+        const BREAK_SELF_CLOSING_RE = /<\s*break\b[^>]*\/\s*>/gi;
+        const BREAK_OPEN_RE = /<\s*break\b[^>]*>/gi;
+        const BREAK_CLOSE_RE = /<\s*\/\s*break\s*>/gi;
+        const SUB_OPEN_RE = /<\s*sub\b[^>]*>/gi;
+        const SUB_CLOSE_RE = /<\s*\/\s*sub\s*>/gi;
+        const CONTAINER_TAG_NAMES = [
+            'prosody', 'aivis:emotion', 'voice', 'p', 's',
+            'emphasis', 'phoneme', 'lang', 'mark', 'desc', 'audio', 'say-as', 'token', 'w',
+        ];
+        const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const OPEN_TAG_REGEXES = CONTAINER_TAG_NAMES.map(name => new RegExp(`<\\s*${escapeRegex(name)}\\b[^>]*>`, 'gi'));
+        const CLOSE_TAG_REGEXES = CONTAINER_TAG_NAMES.map(name => new RegExp(`<\\s*\/\\s*${escapeRegex(name)}\\s*>`, 'gi'));
+        const ANY_TAG_RE = /<\s*\/?\s*[A-Za-z][\w:-]*\b[^>]*>/gi;
+
+        function stripSSMLTagsToPlainText(text) {
+            let s = text;
+            // <break />
+            s = s.replace(BREAK_SELF_CLOSING_RE, '');
+            s = s.replace(BREAK_OPEN_RE, '');
+            s = s.replace(BREAK_CLOSE_RE, '');
+            // <sub>
+            s = s.replace(SUB_OPEN_RE, '');
+            s = s.replace(SUB_CLOSE_RE, '');
+            // コンテナ系タグ（内側テキストは残す）
+            for (const re of OPEN_TAG_REGEXES) s = s.replace(re, '');
+            for (const re of CLOSE_TAG_REGEXES) s = s.replace(re, '');
+            // 残存タグを包括的に除去
+            s = s.replace(ANY_TAG_RE, '');
+            return s;
+        }
+
+        // API キー表示/非表示のトグル
+        function getEyeOpenSVG() {
+            return `
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M1.5 12S6 4.5 12 4.5 22.5 12 22.5 12 18 19.5 12 19.5 1.5 12 1.5 12z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>`;
+        }
+        function getEyeOffSVG() {
+            return `
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3.53 7.11A14.77 14.77 0 0 0 1.5 12s4.5 7.5 10.5 7.5c2.23 0 4.24-.7 5.94-1.77"></path>
+                    <path d="M20.47 16.89A14.77 14.77 0 0 0 22.5 12S18 4.5 12 4.5c-2.23 0-4.24.7-5.94 1.77"></path>
+                    <path d="M9.88 9.88A3 3 0 0 0 12 15a3 3 0 0 0 2.12-.88"></path>
+                    <line x1="3" y1="3" x2="21" y2="21"></line>
+                </svg>`;
+        }
+        function updateAPIKeyVisibilityUI(isVisible) {
+            if (!toggleAPIKeyButton) return;
+            toggleAPIKeyButton.innerHTML = isVisible ? getEyeOffSVG() : getEyeOpenSVG();
+            toggleAPIKeyButton.setAttribute('aria-label', isVisible ? 'API キーを非表示' : 'API キーを表示');
+            toggleAPIKeyButton.setAttribute('title', isVisible ? 'API キーを非表示' : 'API キーを表示');
+        }
+        if (toggleAPIKeyButton && apiKeyInput) {
+            updateAPIKeyVisibilityUI(false);
+            toggleAPIKeyButton.addEventListener('click', () => {
+                const currentlyVisible = !apiKeyInput.classList.contains('masked');
+                apiKeyInput.classList.toggle('masked', currentlyVisible);
+                updateAPIKeyVisibilityUI(!currentlyVisible);
+            });
+        }
+
+        // 音声 Blob を保存するための変数
+        let audioBlob = null;
+
+        // LocalStorage キー定義
+        const STORAGE_KEYS = {
+            BaseURL: 'AivisCloudAPIDemo-BaseURL',
+            apiKey: 'AivisCloudAPIDemo-APIKey',
+            modelUUID: 'AivisCloudAPIDemo-ModelUUID',
+            text: 'AivisCloudAPIDemo-Text'
+        };
+
+        // 履歴保存用 LocalStorage キー
+        const HISTORY_KEYS = {
+            modelUUID: 'AivisCloudAPIDemo-History-ModelUUID',
+            text: 'AivisCloudAPIDemo-History-Text',
+        };
+
+        // デフォルト値
+        const DEFAULT_VALUES = {
+            BaseURL: 'https://api.aivis-project.com',
+            apiKey: 'YOUR_API_KEY',
+            modelUUID: 'a59cb814-0083-4369-8542-f51a29e72af7',
+            text: `エンコードが完了した音声データは順番に、API レスポンスとしてリアルタイムにストリーミング配信します。
+このリアルタイム配信を活用すれば、すべての音声合成が完了するのを待たずに、クライアント側で再生を開始できます。
+届いた音声データのチャンクを順次デコーダーに送信するよう実装することで、音声の生成と再生を同時並行で行えます。
+クライアント側の実装次第となりますが、長いテキストを読み上げる際も最初から最後まで待たずにすぐに再生を開始でき、生成から再生までの待機時間を大幅に短縮できます。
+<sub alias="いちぎょう">一行</sub>に長いテキストをすべて書くと、その行全体が一度に音声合成されるため、ストリーミング配信の効果が得られません。
+適切にテキストを分割することで、生成と配信の並行処理が可能になります。`
+        };
+
+        // ページ読み込み時に保存されている値を復元
+        document.addEventListener('DOMContentLoaded', () => {
+            Object.keys(STORAGE_KEYS).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    const storedValue = localStorage.getItem(STORAGE_KEYS[key]);
+                    element.value = storedValue !== null ? storedValue : DEFAULT_VALUES[key];
+                }
+            });
+            // 復元後に文字数も更新
+            updateCharCount();
+            // 初期サジェスト描画
+            setupSuggestion(modelUUIDInput, modelUUIDSuggestions, HISTORY_KEYS.modelUUID, false);
+            setupSuggestion(textInput, textSuggestions, HISTORY_KEYS.text, true);
+        });
+
+        // LocalStorage に値を保存する関数
+        function saveStoredValues() {
+            Object.keys(STORAGE_KEYS).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) {
+                    localStorage.setItem(STORAGE_KEYS[key], element.value);
+                }
+            });
+        }
+
+        // 入力値が変更されたときに LocalStorage に保存
+        Object.keys(STORAGE_KEYS).forEach(key => {
+            const element = document.getElementById(key);
+            if (element) {
+                element.addEventListener('input', saveStoredValues);
+            }
+        });
+
+        // 文字数をカウントして表示を更新する関数
+        function updateCharCount() {
+            const text = textInput.value;
+            // デモでは SSML を常時有効にしているため、SSML 指示は文字数から除外
+            const plain = stripSSMLTagsToPlainText(text);
+            const charCount = Array.from(plain).length;
+            charCountSpan.textContent = charCount;
+        }
+
+        // テキストエリアの入力変更時に文字数カウンターを更新
+        textInput.addEventListener('input', updateCharCount);
+
+        // リセットボタンのクリック処理
+        resetTextButton.addEventListener('click', () => {
+            textInput.value = DEFAULT_VALUES.text;
+            saveStoredValues();  // リセット後も LocalStorage に保存
+            updateCharCount();  // リセット後に文字数も更新
+        });
+
+        // 履歴ユーティリティ
+        function getHistory(historyKey) {
+            try {
+                const raw = localStorage.getItem(historyKey);
+                const arr = raw ? JSON.parse(raw) : [];
+                return Array.isArray(arr) ? arr.filter(v => typeof v === 'string') : [];
+            } catch (_) {
+                return [];
+            }
+        }
+        function setHistory(historyKey, values) {
+            try {
+                localStorage.setItem(historyKey, JSON.stringify(values));
+            } catch (_) {
+                // ignore
+            }
+        }
+        function saveHistoryItem(historyKey, value) {
+            const val = (value || '').trim();
+            if (!val) return;
+            let list = getHistory(historyKey);
+            list = list.filter(v => v !== val);
+            list.unshift(val);
+            if (list.length > 8) list = list.slice(0, 8);
+            setHistory(historyKey, list);
+        }
+        function removeHistoryItem(historyKey, value) {
+            const list = getHistory(historyKey).filter(v => v !== value);
+            setHistory(historyKey, list);
+        }
+
+        // サジェスト UI
+        function setupSuggestion(inputEl, panelEl, historyKey, isTextarea) {
+            if (!inputEl || !panelEl) return;
+
+            function build() {
+                const items = getHistory(historyKey).slice(0, 8);
+                panelEl.innerHTML = '';
+                if (items.length === 0) {
+                    panelEl.hidden = true;
+                    return;
+                }
+                items.forEach(value => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    const textSpan = document.createElement('div');
+                    textSpan.className = 'suggestion-item__text';
+                    textSpan.textContent = value;
+                    const delBtn = document.createElement('button');
+                    delBtn.type = 'button';
+                    delBtn.className = 'suggestion-item__delete';
+                    delBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+                    delBtn.addEventListener('mousedown', (e) => e.preventDefault());
+                    delBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        removeHistoryItem(historyKey, value);
+                        build();
+                    });
+                    item.appendChild(textSpan);
+                    item.appendChild(delBtn);
+                    item.addEventListener('mousedown', (e) => e.preventDefault());
+                    item.addEventListener('click', () => {
+                        inputEl.value = value;
+                        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                        if (isTextarea) updateCharCount();
+                        hide();
+                        setTimeout(() => inputEl.focus(), 0);
+                    });
+                    panelEl.appendChild(item);
+                });
+                panelEl.hidden = false;
+            }
+
+            function hide() {
+                panelEl.hidden = true;
+            }
+
+            inputEl.addEventListener('focus', build);
+            inputEl.addEventListener('blur', () => setTimeout(hide, 120));
+        }
+
+        // ステータスメッセージを表示する関数
+        function setStatus(message, type = 'info') {
+            console.log(`[${type}] ${message}`);
+            statusDiv.textContent = '';
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = message;
+            statusDiv.appendChild(div);
+        }
+
+        // フォーム送信処理
+        ttsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(ttsForm);
+            const BaseURL = formData.get('BaseURL').trim();
+            const apiKey = formData.get('apiKey').trim();
+            const modelUUID = formData.get('modelUUID').trim();
+            const text = formData.get('text').trim();
+
+            // バリデーション
+            if (!BaseURL) {
+                setStatus('API ベース URL を入力してください', 'error');
+                return;
+            }
+            if (!apiKey) {
+                setStatus('API キーを入力してください', 'error');
+                return;
+            }
+            if (!modelUUID) {
+                setStatus('モデル UUID を入力してください', 'error');
+                return;
+            }
+            if (!text) {
+                setStatus('合成するテキストを入力してください', 'error');
+                return;
+            }
+
+            // 入力値を LocalStorage に保存
+            saveStoredValues();
+
+            // 履歴に保存（最新 8 件）
+            saveHistoryItem(HISTORY_KEYS.modelUUID, modelUUID);
+            saveHistoryItem(HISTORY_KEYS.text, text);
+
+            await runTTSDemo(BaseURL, apiKey, modelUUID, text);
+        });
+
+        // ダウンロードボタンのクリック処理
+        downloadButton.addEventListener('click',  () => {
+            if (!audioBlob) {
+                setStatus('ダウンロード可能な音声データがありません', 'error');
+                return;
+            }
+
+            const url = URL.createObjectURL(audioBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            // 標準メソッドだけでユーザーのタイムゾーンに合わせた日時ファイル名を生成する
+            // ref: https://zenn.dev/terrierscript/articles/2020-09-19-time-sv-se
+            a.download = `AivisCloudAPI-Demo_${new Date().toLocaleString('sv-SE').slice(0, 19).replace(' ', '-').replace(/[-T:]/g, '').replace(/(\d{8})(\d{6})/, '$1-$2')}.mp3`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        // ストリーミング再生を実行する関数
+        async function runTTSDemo(BaseURL, apiKey, modelUUID, text) {
+            try {
+                demoButton.disabled = true;  // API リクエスト中はデモボタンを無効化
+                downloadButton.disabled = true;  // 生成中はダウンロードボタンを無効化
+                audioBlob = null;  // 以前の音声 Blob をクリア
+
+                // 音声合成 API へリクエストを送信
+                setStatus('音声合成リクエストを送信しています...', 'info');
+                const startTime = Date.now();
+                const cleanBaseURL = BaseURL.replace(/\/$/, '');
+                const apiUrl = `${cleanBaseURL}/v1/tts/synthesize`;
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model_uuid: modelUUID,
+                        text: text,
+                        use_ssml: true,
+                        output_format: 'mp3',  // ストリーミングのために MP3 を指定
+                        leading_silence_seconds: 0.0,  // なるべく早く再生を開始するために 0.0 を指定
+                    })
+                });
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    throw new Error(`HTTP ${res.status}: ${errorText}`);
+                }
+                const timeToRequestSent = Date.now() - startTime;
+                setStatus(`音声合成リクエストの送信が完了しました。(${timeToRequestSent}ms)`, 'info');
+
+                // MediaSource / ManagedMediaSource (iOS Safari) ですべての生成が終わる前にストリーミング再生
+                // 音声の生成と再生を同時並行で行うことで、リアルタイムな音声ストリーミングを実現
+                const mediaSource = self.MediaSource ? new self.MediaSource() : new self.ManagedMediaSource();
+                const audio = new Audio(URL.createObjectURL(mediaSource));  // MediaSource を Audio にアタッチ
+                audio.disableRemotePlayback = true;  // ManagedMediaSource で設定必須のフラグ
+                audio.play().catch(console.error);  // ここで再生を開始しておく
+
+                // 音声の再生が実際に開始された時にロギング
+                let timeToFirstPlayback = null;
+                audio.addEventListener('playing', () => {
+                    if (timeToFirstPlayback !== null) return;
+                    timeToFirstPlayback = Date.now() - startTime;
+                    setStatus(`ストリーミング再生を開始します... (${timeToFirstPlayback}ms)`, 'info');
+                }, { once: true });
+
+                // MediaSource が開いたらストリーミング処理を開始
+                // ここで音声データのチャンクを順次受信し、リアルタイムで再生する
+                mediaSource.addEventListener('sourceopen', async () => {
+
+                    // MP3 用の SourceBuffer を作成
+                    // これが音声データのバッファとして機能する
+                    const sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
+
+                    // SourceBuffer が更新中 (sourceBuffer.updating フラグが true の間) は新しいデータの追加がエラーになる
+                    // sourceBuffer.updating が true の場合のみ updateend イベントが発火するのを待つ関数
+                    const waitForIdle = () =>
+                        sourceBuffer.updating
+                            ? new Promise(r => sourceBuffer.addEventListener('updateend', r, { once: true }))
+                            : Promise.resolve();
+
+                    // レスポンスストリームを読み取るための ReadableStream を取得
+                    const reader = res.body.getReader();
+
+                    // 受信済みチャンク (ダウンロード用)
+                    const chunks = [];
+                    // SourceBuffer 追加待ちのキュー
+                    const pendingChunks = [];
+                    // ネットワーク読み取りが完了したフラグ
+                    let readerDone = false;
+                    // 次のチャンク到着を通知するコールバック
+                    let chunkArrivedCallback = null;
+
+                    // バッファリングの上限設定 (単位: 秒)
+                    const MAX_BUFFER_AHEAD = 90;  // 再生位置より何秒先までを SourceBuffer に保持するか
+                    const CLEANUP_MARGIN = 10;  // 再生位置の少し後ろまで残しておく余裕
+
+                    let isFirstChunk = true;
+                    let timeToFirstChunkArrived = null;
+                    let timeToLastChunkArrived = null;
+
+                    // ストリーミングデータを無限ループで読み取り、受信したチャンクを順次処理
+                    (async function readLoop() {
+                        for (;;) {
+                            // ストリームから一つのチャンク（音声データの断片）を読み取る
+                            const { value, done } = await reader.read();
+
+                            // 受信完了の場合の処理
+                            if (done) {
+                                readerDone = true;
+                                if (chunkArrivedCallback) {
+                                    chunkArrivedCallback();  // appendLoop() に受信完了を通知
+                                    chunkArrivedCallback = null;
+                                }
+                                // 全チャンクを結合して音声 Blob を作成
+                                audioBlob = new Blob(chunks, { type: 'audio/mpeg' });
+                                downloadButton.disabled = false;  // ダウンロードボタンを有効化
+                                timeToLastChunkArrived = Date.now() - startTime;
+                                // この時点では音声長を算出できないため、SourceBuffer への書き込み完了時に改めて更新する
+                                setStatus(`すべての生成音声のストリーミング受信が完了しました！<br>開始〜リクエスト送信完了: ${timeToRequestSent}ms / 開始〜受信開始: ${timeToFirstChunkArrived}ms / 開始〜再生開始: ${timeToFirstPlayback}ms / 合計生成時間: ${timeToLastChunkArrived}ms`, 'success');
+                                break;
+                            }
+
+                            // 最初のチャンクを受信した際にロギング
+                            if (isFirstChunk) {
+                                isFirstChunk = false;
+                                timeToFirstChunkArrived = Date.now() - startTime;
+                                setStatus(`チャンクの受信を開始します... (${timeToFirstChunkArrived}ms)`, 'info');
+
+                                // ダウンロード用に保存
+                                chunks.push(value);
+                                try {
+                                    await waitForIdle();
+                                    sourceBuffer.appendBuffer(value);  // 直ちに再生開始
+                                } catch (err) {
+                                    console.error('Error appending first chunk:', err);
+                                }
+                                if (chunkArrivedCallback) {
+                                    chunkArrivedCallback();
+                                    chunkArrivedCallback = null;
+                                }
+                                continue;  // キューに入れず次のループへ
+                            }
+
+                            // 受信したチャンクを保存し、キューに投入
+                            chunks.push(value);
+                            pendingChunks.push(value);
+                            if (chunkArrivedCallback) {
+                                chunkArrivedCallback();
+                                chunkArrivedCallback = null;
+                            }
+                        }
+                    })();
+
+                    // SourceBuffer への書き込みループ
+                    (async function appendLoop() {
+                        try {
+                            for (;;) {
+                                // reader が終わっていてキューも空なら終了
+                                if (readerDone && pendingChunks.length === 0) {
+                                    await waitForIdle();  // 最後の書き込みを待つ
+                                    mediaSource.endOfStream();  // MediaSource を終了し、音声ファイルが完成したことを通知
+                                    // SourceBuffer への書き込み完了時点で音声長を含む最終ログを表示
+                                    setStatus(`すべての生成音声のストリーミング受信が完了しました！音声長: ${audio.duration.toFixed(2)}秒<br>開始〜リクエスト送信完了: ${timeToRequestSent}ms / 開始〜受信開始: ${timeToFirstChunkArrived}ms / 開始〜再生開始: ${timeToFirstPlayback}ms / 合計生成時間: ${timeToLastChunkArrived}ms`, 'success');
+                                    break;
+                                }
+                                // キューにデータがなければ新しいチャンクが到着するまで待機
+                                if (pendingChunks.length === 0) {
+                                    await new Promise(r => {
+                                        // callback 登録前に到着したチャンクを取りこぼさないよう再確認
+                                        if (pendingChunks.length > 0 || readerDone) return r();
+                                        chunkArrivedCallback = r;
+                                    });
+                                    continue;
+                                }
+
+                                const chunk = pendingChunks.shift();
+
+                                // バッファ管理
+                                if (sourceBuffer.buffered.length > 0) {
+                                    let bufferedEnd = sourceBuffer.buffered.end(sourceBuffer.buffered.length - 1);
+                                    let bufferAhead = bufferedEnd - audio.currentTime;
+
+                                    // 1. バッファが上限を超えている場合は、再生が進むまで書き込みを遅延
+                                    while (bufferAhead > MAX_BUFFER_AHEAD) {
+                                        await new Promise(r => setTimeout(r, 100));
+                                        await waitForIdle();
+                                        bufferedEnd = sourceBuffer.buffered.end(sourceBuffer.buffered.length - 1);
+                                        bufferAhead = bufferedEnd - audio.currentTime;
+                                    }
+
+                                    // 2. 再生済みの古いデータを削除して空き容量を確保
+                                    const removalEnd = audio.currentTime - CLEANUP_MARGIN;
+                                    if (removalEnd > 0) {
+                                        try {
+                                            await waitForIdle();
+                                            sourceBuffer.remove(0, removalEnd);
+                                            await waitForIdle();
+                                        } catch (err) {
+                                            console.error('Error removing buffer:', err);
+                                        }
+                                    }
+                                }
+
+                                // イベントループの完了を待機 (InvalidStateError 回避のために重要)
+                                await new Promise(r => setTimeout(r, 0));
+
+                                // 受信した音声チャンクを SourceBuffer に追加
+                                try {
+                                    await waitForIdle();
+                                    sourceBuffer.appendBuffer(chunk);
+                                } catch (error) {
+                                    if (error.name === 'QuotaExceededError') {
+                                        console.error('QuotaExceededError: Retrying after cleanup.');
+                                        await new Promise(r => setTimeout(r, 500));
+                                        // 書き込みに失敗したので、チャンクを戻して再試行
+                                        pendingChunks.unshift(chunk);
+                                        continue;
+                                    } else {
+                                        throw error;
+                                    }
+                                }
+                            }
+                        } catch (err) {
+                            console.error('appendLoop error:', err);
+                            setStatus('エラー: ストリーミング中に問題が発生しました。', 'error');
+                        }
+                    })();
+                });
+
+            } catch (error) {
+                console.error('Error:', error);
+                setStatus(`エラーが発生しました: ${error.message}`, 'error');
+            } finally {
+                // エラー時はダウンロードボタンは無効のまま
+                // 成功時は API リクエストが完了した段階でダウンロードボタンが有効になる
+                demoButton.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

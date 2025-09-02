@@ -1,0 +1,6 @@
+export const CONFIG = {
+  FLIGHT_ENDPOINT: "http://localhost:8080", // ↁECloud Run URL でもOK
+  TTS_ENDPOINT: "http://localhost:8081"      // ↁECloud Run URL でもOK
+};
+
+

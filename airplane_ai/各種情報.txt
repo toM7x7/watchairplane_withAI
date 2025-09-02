@@ -1,0 +1,11 @@
+Gemini API
+AIzaSyBs_-lQIljNugaXUwDUtbJ3KRnnIr5tO9Y
+
+Aivis Base URL
+https://api.aivis-project.com/v1/tts/synthesize
+
+Aivis API
+aivis_qTQEHGzRpz8fFhFC4kdPb8TpBZvwdxGY
+
+Aivis UUID
+80fe2db4-5891-4550-a3f3-dff9a91c0946
